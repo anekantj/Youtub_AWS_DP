@@ -1,7 +1,14 @@
 # Youtub_Project_220525
 
-The project begins with creating an AWS accout a free tier one then setting it up now the AWS cretaed has all the access but usally it is reccomedd to build a user with only the neccessary previvs which is why we hav created IAM with acces key and acess key secert save in this device.
-once the aws iam user acocunt was set up we downoaded the data from kahgle which contains youtube data region wise which i gues is later going to be used for visualization. Now to insert the data into the s 3 bucket we can downlaod aws cli whcih helps to communicate to aws software and services thru cli front we have console browser version as communciation way another aprt from these two are SDK (oython etc etc)
-for a quicker way we have AWS Cornershell as a option which is browser based CLI comms.
-Even though we have the functionality to run the cli kind of commands from cloudshell it is not possible to ingest the data into s3 bucket as the raw data is stored in out local system.hence we downlaod aws cli and set it up once cli was installed we llogged in /configure the IAM user whih we cretaed using acess key and secert we create a s3 bucket in s3 service using root user and apart from thta we gave admin access to iam user for data ingestion prupose.
-AWS crawler is a service were a crawler crawls thru data and builds meta data on top of it so it is advuseable to build mupltiple crawlers when a variation of data chanegs or schema or projects changes,after crawling thru data it develops a catalog in aws glue space which can be integrated with athenna for analysis may be a permisssion to crawl thru s3 bucket is required to get a meta data /catalog out of it.
+The dataset is take from kaggle wbesite which contains raw data in the format of csv and json.The dataset is around the youtube videos properties like name id title likes etc.
+Since AWS cralwer was unable to scan the data from the csv and json file we had to cleanse the data before converting the data format as paruet for standardization purposes.
+
+CSV-->CSV files with stable encoding.
+Json--> Json files which are normalized and does not contain nested json.
+
+Transformations: Once the files were properly converted we perfmored joining operation between the two table using ETL Visual Job in AWS Glue.
+
+This transformed data was stored into another bucket on top of which we can run a crawler to get meta data and create an specific table on it.
+
+Volumne of data in kaggle set: 600 Mb
+Final volumne:250 MB
