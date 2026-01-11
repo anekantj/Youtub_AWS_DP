@@ -1,0 +1,82 @@
+# Architecture Diagram
+
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                          DATA SOURCE (Kaggle)                                │
+│                                                                              │
+│  • YouTube Trending Videos Dataset                                           │
+│  • CSV: Region-wise video statistics (CA, DE, GB, US)                        │
+│  • JSON: Category ID mappings per region                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      │ AWS CLI Upload
+                                      ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                    RAW LAYER – AMAZON S3                                     │
+│                de-on-youtube-raw-useast1-dev                                 │
+│                                                                              │
+│  • raw_statistics_reference_data/  (JSON)                                    │
+│  • raw_statistics/region=XX/     (CSV)                                       │
+│  • Server-side encryption enabled                                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+             │                                      │
+             │ S3 PUT (JSON)                        │ Glue Crawler (CSV)
+             ▼                                      ▼
+┌──────────────────────────────┐      ┌──────────────────────────────────────┐
+│   AWS LAMBDA                 │      │    AWS GLUE CRAWLERS                 │
+│                              │      │                                      │
+│ • Python 3.8 + Wrangler      │      │ • JSON Crawler → db_youtube_raw      │
+│ • Triggered on JSON upload   │      │ • CSV Crawler  → db_youtube_raw      │
+│                              │      │ • Discovers partitions               │
+│ Ops:                         │      └──────────────────────────────────────┘
+│ • Extract & flatten JSON     │
+│ • Convert JSON → Parquet     │
+│ • Auto-register in Catalog   │
+└──────────────────────────────┘
+                                      │
+                                      ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                   AWS GLUE ETL JOB (PySpark)                                 │
+│                                                                              │
+│  • Read raw CSV from Catalog                                                 │
+│  • Schema casting & filtering                                                │
+│  • CSV → Parquet                                                             │
+│  • Partition by region                                                       │
+│  • Job bookmarks enabled                                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                   CLEANSED LAYER – AMAZON S3                                 │
+│                de-on-youtube-cleansed-useast1-dev                            │
+│                                                                              │
+│  • Parquet + Snappy compression                                              │
+│  • Clean video stats + category metadata                                     │
+│  • Glue DB: db_youtube_clean                                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                 GLUE STUDIO – ANALYTICS PIPELINE                             │
+│                                                                              │
+│  • Join video stats with category reference data                             │
+│  • Output Parquet, partitioned by region & category_id                       │
+│  • Catalog: db_youtube_analytics.final_analytics                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                 QUERY & VISUALIZATION                                        │
+│                                                                              │
+│  • Athena: Serverless SQL on S3                                              │
+│  • QuickSight: Views, likes, trends dashboards                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                 SECURITY & MONITORING                                        │
+│                                                                              │
+│  • IAM roles with least privilege                                            │
+│  • CloudWatch logs, metrics & alerts                                         │
+└──────────────────────────────────────────────────────────────────────────────┘
