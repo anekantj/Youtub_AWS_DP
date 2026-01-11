@@ -1,6 +1,4 @@
-Architecture Diagram
-
-
+Flow Diagram
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                          DATA SOURCE (Kaggle)                                │
