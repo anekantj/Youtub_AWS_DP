@@ -81,13 +81,13 @@ de-on-youtube-raw-useast1-dev/
 │   ├── raw_statistics_reference_data/
 │   │   ├── CA_category_id.json
 │   │   ├── DE_category_id.json
-│   │   └── ...
+│   │   
 │   └── raw_statistics/
 │       ├── region=CA/
 │       │   └── CAvideos.csv
 │       ├── region=DE/
 │       │   └── DEvideos.csv
-│       └── ...
+│       
 
 de-on-youtube-cleansed-useast1-dev/
 ├── youtube/
@@ -102,8 +102,8 @@ de-on-youtube-analytics-useast1-dev/
     ├── region=CA/
     │   ├── category_id=1/ (Parquet)
     │   ├── category_id=10/ (Parquet)
-    │   └── ...
-    └── ...
+    │   
+    
 
 de-on-youtube-athena-job-useast1-dev/
 └── query_results/
